@@ -1,0 +1,40 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "northeurope"
+      },
+      "aksClusterName": {
+        "value": "aks-cluster-dev"
+      },
+      "nodeCount": {
+        "value": 2
+      },
+      "nodeVMSize": {
+        "value": "Standard_B2s"
+      },
+      "kubernetesVersion": {
+        "value": "1.30.5"
+      },
+      "adminUsername": {
+        "value": "aksAdmin"
+      },
+      "sshPublicKey": {
+        "value": "ssh-rsa AAAAB3Nza..."
+      },
+      "acrName": {
+        "value": "aksclusterdevacr"
+      },
+      "apimName": {
+        "value": "apim-dev"
+      },
+      "publisherEmail": {
+        "value": "your_email@example.com"
+      },
+      "publisherName": {
+        "value": "Your Name"
+      }
+    }
+  }
+  

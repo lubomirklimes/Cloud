@@ -1,6 +1,7 @@
 param location string
 param environment string
 param subnetId string
+param keyVaultUri string
 
 resource publicIp 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
   name: 'appGatewayPublicIp-${environment}'
@@ -37,7 +38,7 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-04-01' = {
         name: 'frontendConfig'
         properties: {
           publicIPAddress: {
-            id: publicIp.id
+            id: resourceId('Microsoft.Network/publicIPAddresses', 'appGatewayPublicIp-${environment}')
           }
         }
       }
@@ -50,15 +51,11 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-04-01' = {
         }
       }
     ]
-    backendAddressPools: [
+    sslCertificates: [
       {
-        name: 'backendPool'
+        name: 'appGatewaySslCert'
         properties: {
-          backendAddresses: [
-            {
-              fqdn: 'my-backend-${environment}.azurewebsites.net'
-            }
-          ]
+          keyVaultSecretId: '${keyVaultUri}secrets/appgw-cert'
         }
       }
     ]
@@ -73,6 +70,9 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-04-01' = {
             id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', 'appGateway-${environment}', 'frontendPort')
           }
           protocol: 'Https'
+          sslCertificate: {
+            id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', 'appGateway-${environment}', 'appGatewaySslCert')
+          }
         }
       }
     ]
@@ -106,7 +106,7 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-04-01' = {
     ]
     webApplicationFirewallConfiguration: {
       enabled: true
-      firewallMode: 'Prevention' // Nebo 'Detection' pro monitorování
+      firewallMode: 'Prevention'
       ruleSetType: 'OWASP'
       ruleSetVersion: '3.2'
     }

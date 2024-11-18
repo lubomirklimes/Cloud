@@ -2,6 +2,15 @@ param environment string
 param location string = resourceGroup().location
 param appName string
 
+module keyVault 'modules/keyVault.bicep' = {
+  name: 'keyVault-${environment}'
+  params: {
+    appName: appName
+    location: location
+    environment: environment
+  }
+}
+
 module logAnalytics 'modules/logAnalytics.bicep' = {
   name: 'logAnalytics-${environment}'
   params: {
@@ -56,6 +65,7 @@ module functionApp 'modules/functionApp.bicep' = {
 module privateDnsZone 'modules/privateDnsZone.bicep' = {
   name: 'privateDns-${environment}'
   params: {
+    location: location
     environment: environment
     vnetId: vnet.outputs.vnetId
   }
@@ -75,6 +85,7 @@ module applicationGateway 'modules/appGateway.bicep' = {
     environment: environment
     location: location
     subnetId: vnet.outputs.frontendSubnetId
+    keyVaultUri: keyVault.outputs.keyVaultUri
   }
 }
 

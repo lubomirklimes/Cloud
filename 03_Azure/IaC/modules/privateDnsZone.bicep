@@ -1,18 +1,21 @@
 param environment string
+param location string
 param vnetId string
 
-resource dnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.${environment}.azure.local'
-  location: 'westeurope'
+resource privateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: '${environment}.privatelink.database.windows.net'
+  location: location
   properties: {}
 }
 
-resource dnsLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
-  name: 'dnsLink-${environment}'
-  parent: dnsZone
+resource virtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  name: 'vnetLink-${environment}'
+  parent: privateDnsZone
+  location: location
   properties: {
     virtualNetwork: {
       id: vnetId
     }
+    registrationEnabled: false
   }
 }

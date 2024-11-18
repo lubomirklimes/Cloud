@@ -1,0 +1,22 @@
+parameters:
+  - name: environment
+    type: string
+
+jobs:
+- job: DeployToAzure
+  steps:
+  - template: templates/validate-template.yml
+    parameters:
+      bicepFile: 'main.bicep' # Validace Bicep před nasazením
+
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'your-service-connection'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az deployment group create \
+          --resource-group myResourceGroup \
+          --template-file main.bicep \
+          --parameters @parameters/${{ parameters.environment }}.parameters.json
+        echo "Deployment to Azure completed successfully in ${{ parameters.environment }} environment!"

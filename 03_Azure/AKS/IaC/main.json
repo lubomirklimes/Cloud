@@ -1,0 +1,328 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.30.23.60470",
+      "templateHash": "1008343592036024709"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "aksClusterName": {
+      "type": "string"
+    },
+    "nodeCount": {
+      "type": "int"
+    },
+    "nodeVMSize": {
+      "type": "string"
+    },
+    "kubernetesVersion": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "sshPublicKey": {
+      "type": "securestring"
+    },
+    "acrName": {
+      "type": "string",
+      "defaultValue": "[toLower(format('{0}acr', parameters('aksClusterName')))]"
+    },
+    "apimName": {
+      "type": "string"
+    },
+    "publisherEmail": {
+      "type": "string"
+    },
+    "publisherName": {
+      "type": "string"
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "Developer"
+    },
+    "skuCapacity": {
+      "type": "int",
+      "defaultValue": 1
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "acrDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "acrName": {
+            "value": "[parameters('acrName')]"
+          },
+          "sku": {
+            "value": "Basic"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.30.23.60470",
+              "templateHash": "10427147859181585745"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "acrName": {
+              "type": "string"
+            },
+            "sku": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ContainerRegistry/registries",
+              "apiVersion": "2023-07-01",
+              "name": "[parameters('acrName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('sku')]"
+              }
+            }
+          ],
+          "outputs": {
+            "acrLoginServer": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName')), '2023-07-01').loginServer]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "aksDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "aksClusterName": {
+            "value": "[parameters('aksClusterName')]"
+          },
+          "nodeCount": {
+            "value": "[parameters('nodeCount')]"
+          },
+          "nodeVMSize": {
+            "value": "[parameters('nodeVMSize')]"
+          },
+          "kubernetesVersion": {
+            "value": "[parameters('kubernetesVersion')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "sshPublicKey": {
+            "value": "[parameters('sshPublicKey')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.30.23.60470",
+              "templateHash": "7938394279614785282"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "aksClusterName": {
+              "type": "string"
+            },
+            "nodeCount": {
+              "type": "int"
+            },
+            "nodeVMSize": {
+              "type": "string"
+            },
+            "kubernetesVersion": {
+              "type": "string"
+            },
+            "adminUsername": {
+              "type": "string"
+            },
+            "sshPublicKey": {
+              "type": "securestring"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ContainerService/managedClusters",
+              "apiVersion": "2022-09-01",
+              "name": "[parameters('aksClusterName')]",
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "kubernetesVersion": "[parameters('kubernetesVersion')]",
+                "dnsPrefix": "[format('aksdns-{0}', uniqueString(resourceGroup().id))]",
+                "agentPoolProfiles": [
+                  {
+                    "name": "nodepool1",
+                    "count": "[parameters('nodeCount')]",
+                    "vmSize": "[parameters('nodeVMSize')]",
+                    "osType": "Linux",
+                    "mode": "System"
+                  }
+                ],
+                "linuxProfile": {
+                  "adminUsername": "[parameters('adminUsername')]",
+                  "ssh": {
+                    "publicKeys": [
+                      {
+                        "keyData": "[parameters('sshPublicKey')]"
+                      }
+                    ]
+                  }
+                },
+                "networkProfile": {
+                  "networkPlugin": "azure",
+                  "loadBalancerSku": "standard"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "aksClusterName": {
+              "type": "string",
+              "value": "[parameters('aksClusterName')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "apimDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "apimName": {
+            "value": "[parameters('apimName')]"
+          },
+          "publisherEmail": {
+            "value": "[parameters('publisherEmail')]"
+          },
+          "publisherName": {
+            "value": "[parameters('publisherName')]"
+          },
+          "skuName": {
+            "value": "[parameters('skuName')]"
+          },
+          "skuCapacity": {
+            "value": "[parameters('skuCapacity')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.30.23.60470",
+              "templateHash": "3287131814007301778"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "apimName": {
+              "type": "string"
+            },
+            "publisherEmail": {
+              "type": "string"
+            },
+            "publisherName": {
+              "type": "string"
+            },
+            "skuName": {
+              "type": "string"
+            },
+            "skuCapacity": {
+              "type": "int"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ApiManagement/service",
+              "apiVersion": "2024-05-01",
+              "name": "[parameters('apimName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "publisherEmail": "[parameters('publisherEmail')]",
+                "publisherName": "[parameters('publisherName')]"
+              },
+              "sku": {
+                "name": "[parameters('skuName')]",
+                "capacity": "[parameters('skuCapacity')]"
+              }
+            }
+          ],
+          "outputs": {
+            "apimGatewayUrl": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ApiManagement/service', parameters('apimName')), '2024-05-01').gatewayUrl]"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "aksClusterName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'aksDeployment'), '2022-09-01').outputs.aksClusterName.value]"
+    },
+    "acrLoginServer": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'acrDeployment'), '2022-09-01').outputs.acrLoginServer.value]"
+    },
+    "apimGatewayUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apimDeployment'), '2022-09-01').outputs.apimGatewayUrl.value]"
+    }
+  }
+}

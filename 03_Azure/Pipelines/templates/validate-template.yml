@@ -1,0 +1,15 @@
+parameters:
+  - name: bicepFile
+    type: string
+
+jobs:
+- job: ValidateBicep
+  steps:
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'your-service-connection'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az bicep build --file ${{ parameters.bicepFile }}
+        echo "Bicep validation completed successfully!"

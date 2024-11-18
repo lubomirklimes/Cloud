@@ -1,0 +1,40 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "northeurope"
+      },
+      "aksClusterName": {
+        "value": "aks-cluster-dev"
+      },
+      "nodeCount": {
+        "value": 1
+      },
+      "nodeVMSize": {
+        "value": "Standard_DS2_v2"
+      },
+      "kubernetesVersion": {
+        "value": "1.30.5"
+      },
+      "adminUsername": {
+        "value": "aksAdmin"
+      },
+      "sshPublicKey": {
+        "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDIEG5BZLfUGLMVSk+ejrQqCMGJ3YSfplWnTZ4pS+m1lRrkQxw19X2eyce/+e9ldnQNt95q2p6+6XK3mxzr2dvedAO7IsN1oJgzoVeBGqOq4mNdESLv9c6k8vTGUIpSuzsXaxgBanc0Ajb/XoiTEpG1lFQtOqWZK/UAoqLKhySCe/cofHwJB162Jl1imBBvOVUxZizL3AWVMI25LCpjws5eH7EE7kPsIz4k7yZ8Zzh1sHTSwTjUjdM25IpQQIBFB1r0JuKhLNZR+N0QzzQNmGh5QPahFxUTzzrD/7ZydyeHUvcKepPSd8qA/B0qW1zTXErknq8SETItyMV7Oy4eVwq0g0OO0YPuDzb5E0aVbY/lpgURuXeV8rfIhCpoOPbWPKNjyAPfEkswW4OL+Oi9oRn3GJ0juie+v0BSGqa0/aNn0sAazbPwIw3rBAwKVtHdFqgttdYgVaIIav0TrNLA5H2uNGLply4cfS2VT78ri3qD9f/1MCPMzJPCWERWWVrw+OM="
+      },
+      "acrName": {
+        "value": "aksclusterdevacr"
+      },
+      "apimName": {
+        "value": "test-apim-dev"
+      },
+      "publisherEmail": {
+        "value": "your_email@example.com"
+      },
+      "publisherName": {
+        "value": "Your Name"
+      }
+    }
+  }
+  

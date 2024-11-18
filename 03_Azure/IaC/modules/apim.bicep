@@ -1,21 +1,15 @@
 param location string
-param apimName string
-param publisherEmail string
-param publisherName string
-param skuName string
-param skuCapacity int
+param appName string
 
 resource apim 'Microsoft.ApiManagement/service@2024-05-01' = {
-  name: apimName
+  name: '${appName}-apim'
   location: location
-  properties: {
-    publisherEmail: publisherEmail
-    publisherName: publisherName
-  }
   sku: {
-    name: skuName
-    capacity: skuCapacity
+    name: 'Developer'
+    capacity: 1
+  }
+  properties: {
+    publisherEmail: 'admin@example.com'
+    publisherName: 'My Company'
   }
 }
-
-output apimGatewayUrl string = apim.properties.gatewayUrl

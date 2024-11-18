@@ -1,0 +1,12 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Validate
+  jobs:
+  - template: templates/validate-template.yml
+    parameters:
+      bicepFile: 'main.bicep'

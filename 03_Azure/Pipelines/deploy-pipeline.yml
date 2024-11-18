@@ -1,0 +1,55 @@
+trigger: none
+
+parameters:
+  - name: environment
+    type: string
+    default: 'dev'
+    values:
+      - dev
+      - test
+      - prod
+
+stages:
+- stage: Validate
+  jobs:
+  - template: templates/validate-template.yml
+    parameters:
+      bicepFile: 'main.bicep' # Validace Bicep
+
+- stage: DeployDev
+  jobs:
+  - template: templates/deploy-template.yml
+    parameters:
+      environment: dev # Nasazení do DEV
+
+- stage: ApproveTest
+  jobs:
+  - job: WaitForApproval
+    steps:
+    - task: ManualValidation@0
+      inputs:
+        notifyUsers: 'your-email@example.com' # Zadej email pro notifikace o schválení
+        instructions: 'Please approve to continue deployment to TEST.'
+
+- stage: DeployTest
+  dependsOn: ApproveTest
+  jobs:
+  - template: templates/deploy-template.yml
+    parameters:
+      environment: test # Nasazení do TEST
+
+- stage: ApproveProd
+  jobs:
+  - job: WaitForApproval
+    steps:
+    - task: ManualValidation@0
+      inputs:
+        notifyUsers: 'your-email@example.com' # Zadej email pro notifikace o schválení
+        instructions: 'Please approve to continue deployment to PROD.'
+
+- stage: DeployProd
+  dependsOn: ApproveProd
+  jobs:
+  - template: templates/deploy-template.yml
+    parameters:
+      environment: prod # Nasazení do PROD

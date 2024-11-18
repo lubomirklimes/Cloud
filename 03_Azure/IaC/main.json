@@ -4,59 +4,27 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.30.23.60470",
-      "templateHash": "1008343592036024709"
+      "version": "0.31.92.45157",
+      "templateHash": "15680597184445751061"
     }
   },
   "parameters": {
+    "environment": {
+      "type": "string"
+    },
     "location": {
-      "type": "string"
-    },
-    "aksClusterName": {
-      "type": "string"
-    },
-    "nodeCount": {
-      "type": "int"
-    },
-    "nodeVMSize": {
-      "type": "string"
-    },
-    "kubernetesVersion": {
-      "type": "string"
-    },
-    "adminUsername": {
-      "type": "string"
-    },
-    "sshPublicKey": {
-      "type": "securestring"
-    },
-    "acrName": {
       "type": "string",
-      "defaultValue": "[toLower(format('{0}acr', parameters('aksClusterName')))]"
+      "defaultValue": "[resourceGroup().location]"
     },
-    "apimName": {
+    "appName": {
       "type": "string"
-    },
-    "publisherEmail": {
-      "type": "string"
-    },
-    "publisherName": {
-      "type": "string"
-    },
-    "skuName": {
-      "type": "string",
-      "defaultValue": "Developer"
-    },
-    "skuCapacity": {
-      "type": "int",
-      "defaultValue": 1
     }
   },
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
-      "name": "acrDeployment",
+      "name": "[format('logAnalytics-{0}', parameters('environment'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -66,11 +34,8 @@
           "location": {
             "value": "[parameters('location')]"
           },
-          "acrName": {
-            "value": "[parameters('acrName')]"
-          },
-          "sku": {
-            "value": "Basic"
+          "environment": {
+            "value": "[parameters('environment')]"
           }
         },
         "template": {
@@ -79,148 +44,35 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.30.23.60470",
-              "templateHash": "10427147859181585745"
+              "version": "0.31.92.45157",
+              "templateHash": "11417476800882313089"
             }
           },
           "parameters": {
             "location": {
               "type": "string"
             },
-            "acrName": {
-              "type": "string"
-            },
-            "sku": {
+            "environment": {
               "type": "string"
             }
           },
           "resources": [
             {
-              "type": "Microsoft.ContainerRegistry/registries",
-              "apiVersion": "2023-07-01",
-              "name": "[parameters('acrName')]",
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2023-09-01",
+              "name": "[format('logAnalytics-{0}', parameters('environment'))]",
               "location": "[parameters('location')]",
-              "sku": {
-                "name": "[parameters('sku')]"
-              }
-            }
-          ],
-          "outputs": {
-            "acrLoginServer": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName')), '2023-07-01').loginServer]"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
-      "name": "aksDeployment",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          },
-          "aksClusterName": {
-            "value": "[parameters('aksClusterName')]"
-          },
-          "nodeCount": {
-            "value": "[parameters('nodeCount')]"
-          },
-          "nodeVMSize": {
-            "value": "[parameters('nodeVMSize')]"
-          },
-          "kubernetesVersion": {
-            "value": "[parameters('kubernetesVersion')]"
-          },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "sshPublicKey": {
-            "value": "[parameters('sshPublicKey')]"
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.30.23.60470",
-              "templateHash": "7938394279614785282"
-            }
-          },
-          "parameters": {
-            "location": {
-              "type": "string"
-            },
-            "aksClusterName": {
-              "type": "string"
-            },
-            "nodeCount": {
-              "type": "int"
-            },
-            "nodeVMSize": {
-              "type": "string"
-            },
-            "kubernetesVersion": {
-              "type": "string"
-            },
-            "adminUsername": {
-              "type": "string"
-            },
-            "sshPublicKey": {
-              "type": "securestring"
-            }
-          },
-          "resources": [
-            {
-              "type": "Microsoft.ContainerService/managedClusters",
-              "apiVersion": "2022-09-01",
-              "name": "[parameters('aksClusterName')]",
-              "location": "[parameters('location')]",
-              "identity": {
-                "type": "SystemAssigned"
-              },
               "properties": {
-                "kubernetesVersion": "[parameters('kubernetesVersion')]",
-                "dnsPrefix": "[format('aksdns-{0}', uniqueString(resourceGroup().id))]",
-                "agentPoolProfiles": [
-                  {
-                    "name": "nodepool1",
-                    "count": "[parameters('nodeCount')]",
-                    "vmSize": "[parameters('nodeVMSize')]",
-                    "osType": "Linux",
-                    "mode": "System"
-                  }
-                ],
-                "linuxProfile": {
-                  "adminUsername": "[parameters('adminUsername')]",
-                  "ssh": {
-                    "publicKeys": [
-                      {
-                        "keyData": "[parameters('sshPublicKey')]"
-                      }
-                    ]
-                  }
-                },
-                "networkProfile": {
-                  "networkPlugin": "azure",
-                  "loadBalancerSku": "standard"
+                "sku": {
+                  "name": "PerGB2018"
                 }
               }
             }
           ],
           "outputs": {
-            "aksClusterName": {
+            "workspaceId": {
               "type": "string",
-              "value": "[parameters('aksClusterName')]"
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', format('logAnalytics-{0}', parameters('environment')))]"
             }
           }
         }
@@ -229,7 +81,7 @@
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
-      "name": "apimDeployment",
+      "name": "[format('vnet-{0}', parameters('environment'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -239,20 +91,8 @@
           "location": {
             "value": "[parameters('location')]"
           },
-          "apimName": {
-            "value": "[parameters('apimName')]"
-          },
-          "publisherEmail": {
-            "value": "[parameters('publisherEmail')]"
-          },
-          "publisherName": {
-            "value": "[parameters('publisherName')]"
-          },
-          "skuName": {
-            "value": "[parameters('skuName')]"
-          },
-          "skuCapacity": {
-            "value": "[parameters('skuCapacity')]"
+          "environment": {
+            "value": "[parameters('environment')]"
           }
         },
         "template": {
@@ -261,68 +101,787 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.30.23.60470",
-              "templateHash": "3287131814007301778"
+              "version": "0.31.92.45157",
+              "templateHash": "62772028733364647"
             }
           },
           "parameters": {
             "location": {
               "type": "string"
             },
-            "apimName": {
+            "environment": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2023-04-01",
+              "name": "[format('vnet-{0}', parameters('environment'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "10.0.0.0/16"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "frontend",
+                    "properties": {
+                      "addressPrefix": "10.0.1.0/24"
+                    }
+                  },
+                  {
+                    "name": "backend",
+                    "properties": {
+                      "addressPrefix": "10.0.2.0/24"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "outputs": {
+            "vnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks', format('vnet-{0}', parameters('environment')))]"
+            },
+            "frontendSubnetId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', format('vnet-{0}', parameters('environment'))), '2023-04-01').subnets[0].id]"
+            },
+            "backendSubnetId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', format('vnet-{0}', parameters('environment'))), '2023-04-01').subnets[1].id]"
+            },
+            "appGatewaySubnetPrefix": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', format('vnet-{0}', parameters('environment'))), '2023-04-01').subnets[0].properties.addressPrefix]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('nsgAppGw-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "8106062197720149523"
+            }
+          },
+          "parameters": {
+            "location": {
               "type": "string"
             },
-            "publisherEmail": {
+            "environment": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2023-04-01",
+              "name": "[format('nsg-appGateway-{0}', parameters('environment'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "AllowHttps",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "443",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 100,
+                      "direction": "Inbound"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "outputs": {
+            "nsgId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkSecurityGroups', format('nsg-appGateway-{0}', parameters('environment')))]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('nsg-backend-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "appGatewaySubnetCidr": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}', parameters('environment'))), '2022-09-01').outputs.appGatewaySubnetPrefix.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "16457935495538784919"
+            }
+          },
+          "parameters": {
+            "location": {
               "type": "string"
             },
-            "publisherName": {
+            "environment": {
               "type": "string"
             },
-            "skuName": {
+            "appGatewaySubnetCidr": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2023-04-01",
+              "name": "[format('nsg-backend-{0}', parameters('environment'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "AllowFromAppGateway",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "80",
+                      "sourceAddressPrefix": "[parameters('appGatewaySubnetCidr')]",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 100,
+                      "direction": "Inbound"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('vnet-{0}', parameters('environment')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('appServicePlan-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "221396517077408933"
+            }
+          },
+          "parameters": {
+            "location": {
               "type": "string"
             },
-            "skuCapacity": {
-              "type": "int"
+            "environment": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[format('appServicePlan-{0}', parameters('environment'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "F1",
+                "tier": "Free",
+                "size": "F1"
+              },
+              "properties": {
+                "reserved": false
+              }
+            }
+          ],
+          "outputs": {
+            "planId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Web/serverfarms', format('appServicePlan-{0}', parameters('environment')))]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('functionApp-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "appName": {
+            "value": "[parameters('appName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "appServicePlanId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('appServicePlan-{0}', parameters('environment'))), '2022-09-01').outputs.planId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "2947181155802620354"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "appName": {
+              "type": "string"
+            },
+            "environment": {
+              "type": "string"
+            },
+            "appServicePlanId": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2023-05-01",
+              "name": "[toLower(format('stacapp{0}', parameters('environment')))]",
+              "location": "[parameters('location')]",
+              "kind": "StorageV2",
+              "sku": {
+                "name": "Standard_LRS"
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2024-04-01",
+              "name": "[format('{0}-func', parameters('appName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "serverFarmId": "[parameters('appServicePlanId')]",
+                "siteConfig": {
+                  "appSettings": [
+                    {
+                      "name": "AzureWebJobsStorage",
+                      "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', toLower(format('stacapp{0}', parameters('environment')))), '2023-05-01').primaryEndpoints.blob]"
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('stacapp{0}', parameters('environment'))))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "functionAppId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Web/sites', format('{0}-func', parameters('appName')))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('appServicePlan-{0}', parameters('environment')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('privateDns-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "vnetId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}', parameters('environment'))), '2022-09-01').outputs.vnetId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "12143447941953729530"
+            }
+          },
+          "parameters": {
+            "environment": {
+              "type": "string"
+            },
+            "vnetId": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/privateDnsZones",
+              "apiVersion": "2024-06-01",
+              "name": "[format('privatelink.{0}.azure.local', parameters('environment'))]",
+              "location": "westeurope",
+              "properties": {}
+            },
+            {
+              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+              "apiVersion": "2024-06-01",
+              "name": "[format('{0}/{1}', format('privatelink.{0}.azure.local', parameters('environment')), format('dnsLink-{0}', parameters('environment')))]",
+              "properties": {
+                "virtualNetwork": {
+                  "id": "[parameters('vnetId')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.{0}.azure.local', parameters('environment')))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('vnet-{0}', parameters('environment')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('apim-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "appName": {
+            "value": "[parameters('appName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "5071928639954133339"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "appName": {
+              "type": "string"
             }
           },
           "resources": [
             {
               "type": "Microsoft.ApiManagement/service",
               "apiVersion": "2024-05-01",
-              "name": "[parameters('apimName')]",
+              "name": "[format('{0}-apim', parameters('appName'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Developer",
+                "capacity": 1
+              },
+              "properties": {
+                "publisherEmail": "admin@example.com",
+                "publisherName": "My Company"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('applicationGateway-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "subnetId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}', parameters('environment'))), '2022-09-01').outputs.frontendSubnetId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "287584683495227940"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "environment": {
+              "type": "string"
+            },
+            "subnetId": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2023-04-01",
+              "name": "[format('appGatewayPublicIp-{0}', parameters('environment'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static"
+              }
+            },
+            {
+              "type": "Microsoft.Network/applicationGateways",
+              "apiVersion": "2023-04-01",
+              "name": "[format('appGateway-{0}', parameters('environment'))]",
               "location": "[parameters('location')]",
               "properties": {
-                "publisherEmail": "[parameters('publisherEmail')]",
-                "publisherName": "[parameters('publisherName')]"
+                "sku": {
+                  "name": "WAF_v2",
+                  "tier": "WAF_v2",
+                  "capacity": 2
+                },
+                "gatewayIPConfigurations": [
+                  {
+                    "name": "appGatewayIpConfig",
+                    "properties": {
+                      "subnet": {
+                        "id": "[parameters('subnetId')]"
+                      }
+                    }
+                  }
+                ],
+                "frontendIPConfigurations": [
+                  {
+                    "name": "frontendConfig",
+                    "properties": {
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('appGatewayPublicIp-{0}', parameters('environment')))]"
+                      }
+                    }
+                  }
+                ],
+                "frontendPorts": [
+                  {
+                    "name": "frontendPort",
+                    "properties": {
+                      "port": 443
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "backendPool",
+                    "properties": {
+                      "backendAddresses": [
+                        {
+                          "fqdn": "[format('my-backend-{0}.azurewebsites.net', parameters('environment'))]"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "httpListeners": [
+                  {
+                    "name": "httpListener",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', format('appGateway-{0}', parameters('environment')), 'frontendConfig')]"
+                      },
+                      "frontendPort": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', format('appGateway-{0}', parameters('environment')), 'frontendPort')]"
+                      },
+                      "protocol": "Https"
+                    }
+                  }
+                ],
+                "requestRoutingRules": [
+                  {
+                    "name": "defaultRoutingRule",
+                    "properties": {
+                      "ruleType": "Basic",
+                      "httpListener": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', format('appGateway-{0}', parameters('environment')), 'httpListener')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', format('appGateway-{0}', parameters('environment')), 'backendPool')]"
+                      },
+                      "backendHttpSettings": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', format('appGateway-{0}', parameters('environment')), 'defaultHttpSettings')]"
+                      }
+                    }
+                  }
+                ],
+                "backendHttpSettingsCollection": [
+                  {
+                    "name": "defaultHttpSettings",
+                    "properties": {
+                      "port": 80,
+                      "protocol": "Http",
+                      "cookieBasedAffinity": "Disabled",
+                      "requestTimeout": 20
+                    }
+                  }
+                ],
+                "webApplicationFirewallConfiguration": {
+                  "enabled": true,
+                  "firewallMode": "Prevention",
+                  "ruleSetType": "OWASP",
+                  "ruleSetVersion": "3.2"
+                }
               },
-              "sku": {
-                "name": "[parameters('skuName')]",
-                "capacity": "[parameters('skuCapacity')]"
-              }
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', format('appGatewayPublicIp-{0}', parameters('environment')))]"
+              ]
             }
           ],
           "outputs": {
-            "apimGatewayUrl": {
+            "appGatewayId": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.ApiManagement/service', parameters('apimName')), '2024-05-01').gatewayUrl]"
+              "value": "[resourceId('Microsoft.Network/applicationGateways', format('appGateway-{0}', parameters('environment')))]"
+            },
+            "publicIpAddress": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', format('appGatewayPublicIp-{0}', parameters('environment'))), '2023-04-01').ipAddress]"
             }
           }
         }
-      }
-    }
-  ],
-  "outputs": {
-    "aksClusterName": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'aksDeployment'), '2022-09-01').outputs.aksClusterName.value]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('vnet-{0}', parameters('environment')))]"
+      ]
     },
-    "acrLoginServer": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'acrDeployment'), '2022-09-01').outputs.acrLoginServer.value]"
-    },
-    "apimGatewayUrl": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apimDeployment'), '2022-09-01').outputs.apimGatewayUrl.value]"
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('frontDoor-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "frontendHost": {
+            "value": "[format('my-app-{0}.contoso.com', parameters('environment'))]"
+          },
+          "backendAppServiceUrl": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('functionApp-{0}', parameters('environment'))), '2022-09-01').outputs.functionAppId.value]"
+          },
+          "appGatewayPublicIp": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('applicationGateway-{0}', parameters('environment'))), '2022-09-01').outputs.publicIpAddress.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "12799808951651136995"
+            }
+          },
+          "parameters": {
+            "environment": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "frontendHost": {
+              "type": "string"
+            },
+            "backendAppServiceUrl": {
+              "type": "string"
+            },
+            "appGatewayPublicIp": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Cdn/profiles",
+              "apiVersion": "2021-06-01",
+              "name": "[format('frontDoorProfile-{0}', parameters('environment'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard_AzureFrontDoor"
+              }
+            },
+            {
+              "type": "Microsoft.Cdn/profiles/afdEndpoints",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', format('frontDoorProfile-{0}', parameters('environment')), format('frontDoorEndpoint-{0}', parameters('environment')))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "enabledState": "Enabled"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', format('frontDoorProfile-{0}', parameters('environment')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Cdn/profiles/backendPools",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', format('frontDoorProfile-{0}', parameters('environment')), format('backendPool-{0}', parameters('environment')))]",
+              "properties": {
+                "backends": [
+                  {
+                    "address": "[parameters('appGatewayPublicIp')]",
+                    "enabledState": "Enabled",
+                    "priority": 1,
+                    "weight": 1,
+                    "backendHostHeader": "[parameters('frontendHost')]",
+                    "httpPort": 80,
+                    "httpsPort": 443
+                  },
+                  {
+                    "address": "[parameters('backendAppServiceUrl')]",
+                    "enabledState": "Enabled",
+                    "priority": 2,
+                    "weight": 1,
+                    "backendHostHeader": "[parameters('frontendHost')]",
+                    "httpPort": 80,
+                    "httpsPort": 443
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', format('frontDoorProfile-{0}', parameters('environment')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Cdn/profiles/routes",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', format('frontDoorProfile-{0}', parameters('environment')), format('route-{0}', parameters('environment')))]",
+              "properties": {
+                "acceptedProtocols": [
+                  "Http",
+                  "Https"
+                ],
+                "patternsToMatch": [
+                  "/*"
+                ],
+                "forwardingProtocol": "HttpsOnly",
+                "linkToBackendPool": {
+                  "id": "[resourceId('Microsoft.Cdn/profiles/backendPools', format('frontDoorProfile-{0}', parameters('environment')), format('backendPool-{0}', parameters('environment')))]"
+                },
+                "httpsRedirect": "Enabled"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles/backendPools', format('frontDoorProfile-{0}', parameters('environment')), format('backendPool-{0}', parameters('environment')))]",
+                "[resourceId('Microsoft.Cdn/profiles', format('frontDoorProfile-{0}', parameters('environment')))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('applicationGateway-{0}', parameters('environment')))]",
+        "[resourceId('Microsoft.Resources/deployments', format('functionApp-{0}', parameters('environment')))]"
+      ]
     }
-  }
+  ]
 }

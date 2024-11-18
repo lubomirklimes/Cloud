@@ -1,0 +1,25 @@
+trigger: none
+
+stages:
+- stage: Delete
+  jobs:
+  - job: DeleteResources
+    parameters:
+      - name: environment
+        type: string
+        default: 'dev'
+        values:
+          - dev
+          - test
+          - prod
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'your-service-connection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az group delete --name myResourceGroup --yes --no-wait
+          echo "Resource group deleted successfully for ${{ parameters.environment }} environment!"

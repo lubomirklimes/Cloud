@@ -15,7 +15,7 @@ module keyVault 'modules/keyVault.bicep' = {
   params: {
     location: location
     environment: environment
-    identityId: managedIdentity.outputs.identityId
+    objectId: managedIdentity.outputs.objectId
   }
 }
 

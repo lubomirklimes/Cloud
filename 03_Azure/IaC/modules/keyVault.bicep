@@ -1,6 +1,6 @@
 param location string
 param environment string
-param identityId string
+param objectId string // Předáno jako parametr
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   name: 'kv-lcs-${environment}'
@@ -14,7 +14,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
     accessPolicies: [
       {
         tenantId: subscription().tenantId
-        objectId: '${identityId}' // ID Managed Identity
+        objectId: objectId 
         permissions: {
           secrets: [
             'get'

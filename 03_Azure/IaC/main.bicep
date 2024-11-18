@@ -99,7 +99,7 @@ module applicationGateway 'modules/appGateway.bicep' = {
     location: location
     subnetId: vnet.outputs.frontendSubnetId
     keyVaultUri: keyVault.outputs.keyVaultUri
-    managedIdentity: managedIdentity
+    identityId: managedIdentity.outputs.identityId
   }
 }
 

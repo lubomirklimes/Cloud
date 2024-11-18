@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.31.92.45157",
-      "templateHash": "15680597184445751061"
+      "templateHash": "17307106291461566214"
     }
   },
   "parameters": {
@@ -21,6 +21,181 @@
     }
   },
   "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('id-lcs-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "16103985632286444302"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "environment": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+              "apiVersion": "2023-01-31",
+              "name": "[format('managedIdentity-{0}', parameters('environment'))]",
+              "location": "[parameters('location')]"
+            }
+          ],
+          "outputs": {
+            "objectId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('managedIdentity-{0}', parameters('environment'))), '2023-01-31').principalId]"
+            },
+            "identityId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('managedIdentity-{0}', parameters('environment')))]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('keyVault-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "5901876025984565466"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "environment": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.KeyVault/vaults",
+              "apiVersion": "2023-07-01",
+              "name": "[format('kv-lcs-{0}', parameters('environment'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "family": "A",
+                  "name": "standard"
+                },
+                "tenantId": "[subscription().tenantId]",
+                "enableRbacAuthorization": true,
+                "networkAcls": {
+                  "bypass": "AzureServices",
+                  "defaultAction": "Deny"
+                },
+                "enableSoftDelete": true,
+                "enabledForDeployment": true,
+                "enabledForTemplateDeployment": true,
+                "enabledForDiskEncryption": false
+              }
+            }
+          ],
+          "outputs": {
+            "keyVaultId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.KeyVault/vaults', format('kv-lcs-{0}', parameters('environment')))]"
+            },
+            "keyVaultUri": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.KeyVault/vaults', format('kv-lcs-{0}', parameters('environment'))), '2023-07-01').vaultUri]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('roleAssignment-{0}', parameters('environment'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "principalId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('id-lcs-{0}', parameters('environment'))), '2022-09-01').outputs.objectId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.31.92.45157",
+              "templateHash": "10851868803484007014"
+            }
+          },
+          "parameters": {
+            "principalId": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "/",
+              "name": "[guid(subscription().tenantId, 'KeyVault Secrets User', parameters('principalId'))]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')]",
+                "principalId": "[parameters('principalId')]"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('id-lcs-{0}', parameters('environment')))]"
+      ]
+    },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
@@ -394,7 +569,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.31.92.45157",
-              "templateHash": "2947181155802620354"
+              "templateHash": "1589869067915639738"
             }
           },
           "parameters": {
@@ -415,7 +590,7 @@
             {
               "type": "Microsoft.Storage/storageAccounts",
               "apiVersion": "2023-05-01",
-              "name": "[toLower(format('stacapp{0}', parameters('environment')))]",
+              "name": "[toLower(format('salcs{0}', parameters('environment')))]",
               "location": "[parameters('location')]",
               "kind": "StorageV2",
               "sku": {
@@ -425,7 +600,7 @@
             {
               "type": "Microsoft.Web/sites",
               "apiVersion": "2024-04-01",
-              "name": "[format('{0}-func', parameters('appName'))]",
+              "name": "[format('func-{0}', parameters('appName'))]",
               "location": "[parameters('location')]",
               "properties": {
                 "serverFarmId": "[parameters('appServicePlanId')]",
@@ -433,20 +608,20 @@
                   "appSettings": [
                     {
                       "name": "AzureWebJobsStorage",
-                      "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', toLower(format('stacapp{0}', parameters('environment')))), '2023-05-01').primaryEndpoints.blob]"
+                      "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', toLower(format('salcs{0}', parameters('environment')))), '2023-05-01').primaryEndpoints.blob]"
                     }
                   ]
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('stacapp{0}', parameters('environment'))))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('salcs{0}', parameters('environment'))))]"
               ]
             }
           ],
           "outputs": {
             "functionAppId": {
               "type": "string",
-              "value": "[resourceId('Microsoft.Web/sites', format('{0}-func', parameters('appName')))]"
+              "value": "[resourceId('Microsoft.Web/sites', format('func-{0}', parameters('appName')))]"
             }
           }
         }
@@ -479,7 +654,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.31.92.45157",
-              "templateHash": "12143447941953729530"
+              "templateHash": "2266698040011489466"
             }
           },
           "parameters": {
@@ -494,21 +669,23 @@
             {
               "type": "Microsoft.Network/privateDnsZones",
               "apiVersion": "2024-06-01",
-              "name": "[format('privatelink.{0}.azure.local', parameters('environment'))]",
-              "location": "westeurope",
+              "name": "[format('privatelink.{0}', parameters('environment'))]",
+              "location": "global",
               "properties": {}
             },
             {
               "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
               "apiVersion": "2024-06-01",
-              "name": "[format('{0}/{1}', format('privatelink.{0}.azure.local', parameters('environment')), format('dnsLink-{0}', parameters('environment')))]",
+              "name": "[format('{0}/{1}', format('privatelink.{0}', parameters('environment')), format('vnetLink-{0}', parameters('environment')))]",
+              "location": "global",
               "properties": {
                 "virtualNetwork": {
                   "id": "[parameters('vnetId')]"
-                }
+                },
+                "registrationEnabled": false
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.{0}.azure.local', parameters('environment')))]"
+                "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.{0}', parameters('environment')))]"
               ]
             }
           ]
@@ -542,7 +719,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.31.92.45157",
-              "templateHash": "5071928639954133339"
+              "templateHash": "1981060269528851897"
             }
           },
           "parameters": {
@@ -557,7 +734,7 @@
             {
               "type": "Microsoft.ApiManagement/service",
               "apiVersion": "2024-05-01",
-              "name": "[format('{0}-apim', parameters('appName'))]",
+              "name": "[format('apim-{0}', parameters('appName'))]",
               "location": "[parameters('location')]",
               "sku": {
                 "name": "Developer",
@@ -590,6 +767,12 @@
           },
           "subnetId": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}', parameters('environment'))), '2022-09-01').outputs.frontendSubnetId.value]"
+          },
+          "keyVaultUri": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', parameters('environment'))), '2022-09-01').outputs.keyVaultUri.value]"
+          },
+          "managedIdentity": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('id-lcs-{0}', parameters('environment'))), '2022-09-01')]"
           }
         },
         "template": {
@@ -599,7 +782,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.31.92.45157",
-              "templateHash": "287584683495227940"
+              "templateHash": "7100402766325835788"
             }
           },
           "parameters": {
@@ -611,6 +794,12 @@
             },
             "subnetId": {
               "type": "string"
+            },
+            "keyVaultUri": {
+              "type": "string"
+            },
+            "managedIdentity": {
+              "type": "object"
             }
           },
           "resources": [
@@ -631,6 +820,12 @@
               "apiVersion": "2023-04-01",
               "name": "[format('appGateway-{0}', parameters('environment'))]",
               "location": "[parameters('location')]",
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', parameters('managedIdentity').outputs.identityId)]": {}
+                }
+              },
               "properties": {
                 "sku": {
                   "name": "WAF_v2",
@@ -665,13 +860,21 @@
                     }
                   }
                 ],
+                "sslCertificates": [
+                  {
+                    "name": "appGatewaySslCert",
+                    "properties": {
+                      "keyVaultSecretId": "[format('{0}secrets/appgw-cert', parameters('keyVaultUri'))]"
+                    }
+                  }
+                ],
                 "backendAddressPools": [
                   {
                     "name": "backendPool",
                     "properties": {
                       "backendAddresses": [
                         {
-                          "fqdn": "[format('my-backend-{0}.azurewebsites.net', parameters('environment'))]"
+                          "fqdn": "[format('my-app-backend-{0}.azurewebsites.net', parameters('environment'))]"
                         }
                       ]
                     }
@@ -687,7 +890,10 @@
                       "frontendPort": {
                         "id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', format('appGateway-{0}', parameters('environment')), 'frontendPort')]"
                       },
-                      "protocol": "Https"
+                      "protocol": "Https",
+                      "sslCertificate": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/sslCertificates', format('appGateway-{0}', parameters('environment')), 'appGatewaySslCert')]"
+                      }
                     }
                   }
                 ],
@@ -704,7 +910,8 @@
                       },
                       "backendHttpSettings": {
                         "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', format('appGateway-{0}', parameters('environment')), 'defaultHttpSettings')]"
-                      }
+                      },
+                      "priority": 1
                     }
                   }
                 ],
@@ -744,6 +951,8 @@
         }
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', parameters('environment')))]",
+        "[resourceId('Microsoft.Resources/deployments', format('id-lcs-{0}', parameters('environment')))]",
         "[resourceId('Microsoft.Resources/deployments', format('vnet-{0}', parameters('environment')))]"
       ]
     },

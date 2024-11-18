@@ -4,7 +4,7 @@ param environment string
 param appServicePlanId string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: toLower('stacapp${environment}')
+  name: toLower('salcs${environment}')
   location: location
   kind: 'StorageV2'
   sku: {
@@ -13,7 +13,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 }
 
 resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
-  name: '${appName}-func'
+  name: 'func-${appName}'
   location: location
   properties: {
     serverFarmId: appServicePlanId

@@ -2,6 +2,7 @@ param location string
 param environment string
 param subnetId string
 param keyVaultUri string
+param identityId string
 
 resource publicIp 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
   name: 'appGatewayPublicIp-${environment}'
@@ -17,6 +18,12 @@ resource publicIp 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
 resource appGateway 'Microsoft.Network/applicationGateways@2023-04-01' = {
   name: 'appGateway-${environment}'
   location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${identityId}': {}
+    }
+  }
   properties: {
     sku: {
       name: 'WAF_v2'
@@ -38,7 +45,7 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-04-01' = {
         name: 'frontendConfig'
         properties: {
           publicIPAddress: {
-            id: resourceId('Microsoft.Network/publicIPAddresses', 'appGatewayPublicIp-${environment}')
+            id: publicIp.id
           }
         }
       }
@@ -56,6 +63,18 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-04-01' = {
         name: 'appGatewaySslCert'
         properties: {
           keyVaultSecretId: '${keyVaultUri}secrets/appgw-cert'
+        }
+      }
+    ]
+    backendAddressPools: [
+      {
+        name: 'backendPool'
+        properties: {
+          backendAddresses: [
+            {
+              fqdn: 'my-app-backend-${environment}.azurewebsites.net'
+            }
+          ]
         }
       }
     ]

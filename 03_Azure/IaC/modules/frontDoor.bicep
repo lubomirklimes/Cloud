@@ -18,7 +18,6 @@ resource frontDoorEndpoint 'Microsoft.Cdn/profiles/afdEndpoints@2021-06-01' = {
   location: location
   properties: {
     enabledState: 'Enabled'
-    // Vlastnost "hostName" byla odstraněna
   }
 }
 

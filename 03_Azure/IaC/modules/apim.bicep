@@ -2,7 +2,7 @@ param location string
 param appName string
 
 resource apim 'Microsoft.ApiManagement/service@2024-05-01' = {
-  name: '${appName}-apim'
+  name: 'apim-${appName}'
   location: location
   sku: {
     name: 'Developer'

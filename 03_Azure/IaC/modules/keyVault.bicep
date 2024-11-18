@@ -1,9 +1,9 @@
-param appName string
 param location string
 param environment string
+param identityId string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
-  name: 'kv-${appName}-${environment}'
+  name: 'kv-lcs-${environment}'
   location: location
   properties: {
     sku: {
@@ -11,7 +11,17 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
       name: 'standard'
     }
     tenantId: subscription().tenantId
-    accessPolicies: []
+    accessPolicies: [
+      {
+        tenantId: subscription().tenantId
+        objectId: '${identityId}' // ID Managed Identity
+        permissions: {
+          secrets: [
+            'get'
+          ]
+        }
+      }
+    ]
     enableSoftDelete: true
     enabledForDeployment: true
     enabledForTemplateDeployment: true

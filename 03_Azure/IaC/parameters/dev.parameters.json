@@ -6,10 +6,10 @@
         "value": "dev"
       },
       "location": {
-        "value": "North Europe"
+        "value": "westeurope"
       },
       "appName": {
-        "value": "my-app-dev"
+        "value": "lcs"
       }
     }
   }

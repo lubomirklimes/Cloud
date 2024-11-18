@@ -2,7 +2,7 @@ param location string
 param environment string
 param subnetId string
 param keyVaultUri string
-param identityId string
+param managedIdentity object
 
 resource publicIp 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
   name: 'appGatewayPublicIp-${environment}'
@@ -21,7 +21,7 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-04-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${identityId}': {}
+      '${managedIdentity.outputs.identityId}': {}
     }
   }
   properties: {

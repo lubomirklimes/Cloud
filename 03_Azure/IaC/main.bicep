@@ -15,7 +15,13 @@ module keyVault 'modules/keyVault.bicep' = {
   params: {
     location: location
     environment: environment
-    objectId: managedIdentity.outputs.objectId
+  }
+}
+
+module roleAssignment 'modules/roleAssignment.bicep' = {
+  name: 'roleAssignment-${environment}'
+  params: {
+    principalId: managedIdentity.outputs.objectId // Použijte správný výstup z managedIdentity    
   }
 }
 
@@ -93,7 +99,7 @@ module applicationGateway 'modules/appGateway.bicep' = {
     location: location
     subnetId: vnet.outputs.frontendSubnetId
     keyVaultUri: keyVault.outputs.keyVaultUri
-    identityId: managedIdentity.outputs.identityId
+    managedIdentity: managedIdentity
   }
 }
 

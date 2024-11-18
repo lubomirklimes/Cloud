@@ -1,8 +1,7 @@
 param location string
 param environment string
-param objectId string // Předáno jako parametr
 
-resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: 'kv-lcs-${environment}'
   location: location
   properties: {
@@ -11,17 +10,11 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
       name: 'standard'
     }
     tenantId: subscription().tenantId
-    accessPolicies: [
-      {
-        tenantId: subscription().tenantId
-        objectId: objectId 
-        permissions: {
-          secrets: [
-            'get'
-          ]
-        }
-      }
-    ]
+    enableRbacAuthorization: true
+    networkAcls: {
+      bypass: 'AzureServices' // Povolení Trusted Microsoft Services
+      defaultAction: 'Deny'
+    }
     enableSoftDelete: true
     enabledForDeployment: true
     enabledForTemplateDeployment: true

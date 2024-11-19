@@ -15,13 +15,7 @@ module keyVault 'modules/keyVault.bicep' = {
   params: {
     location: location
     environment: environment
-  }
-}
-
-module roleAssignment 'modules/roleAssignment.bicep' = {
-  name: 'roleAssignment-${environment}'
-  params: {
-    principalId: managedIdentity.outputs.objectId // Použijte správný výstup z managedIdentity    
+    objectId: managedIdentity.outputs.objectId
   }
 }
 
@@ -103,13 +97,13 @@ module applicationGateway 'modules/appGateway.bicep' = {
   }
 }
 
-module frontDoor 'modules/frontDoor.bicep' = {
-  name: 'frontDoor-${environment}'
-  params: {
-    environment: environment
-    location: location
-    frontendHost: 'my-app-${environment}.contoso.com' // Změňte na svou doménu
-    backendAppServiceUrl: functionApp.outputs.functionAppId
-    appGatewayPublicIp: applicationGateway.outputs.publicIpAddress
-  }
-}
+// module frontDoor 'modules/frontDoor.bicep' = {
+//   name: 'frontDoor-${environment}'
+//   params: {
+//     environment: environment
+//     location: location
+//     frontendHost: 'my-app-${environment}.contoso.com' // Změňte na svou doménu
+//     backendAppServiceUrl: functionApp.outputs.functionAppId
+//     appGatewayPublicIp: applicationGateway.outputs.publicIpAddress
+//   }
+// }
